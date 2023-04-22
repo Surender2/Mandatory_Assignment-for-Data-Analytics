@@ -1,1 +1,1 @@
-# Mandotory_Assignment-for-Data-Analytics
+# Mandatory_Assignment-for-Data-Analytics
