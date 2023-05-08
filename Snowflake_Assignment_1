@@ -1,0 +1,138 @@
+--1.Load the given dataset into snowflake with a primary key to Order Date column.
+
+-- STEPS FOLLOWED TO LOAD THE GIVEN DATASET INTO SNOWFLAKE DATABASE;
+
+/* 1. USE DATABASE DEMO_DATABASE;
+2. WRITTEN BELOW MENTIONED QUERY TO CREATE OR REPLACE TABLE
+3. LOAD THE DATA:
+    1. DATABASE > DEMO_DATABASE > SK_SALES_DATA TABLE > LOAD TABLE > SELECT WAREHOUSE > SOURCE FILE > FILE FORMAT >
+        > SELECT HEADER LINES TO SKIP - 1 > FIELD OPTIONALLY ENCLOSED - DOUBLE QUOTE
+4. DATA CLEANING (IN EXCEL)
+    1. REMOVE ',', SPECIAL CHARACTERS FROM ALL THE COLUMNS, CHANGE THE DATE FORMAT USING TEXT TO COLUMNS.
+    2. OPEN IN NOTEPAD ++ > CONVERT TO UTF8 > SAVE AS CSV UTF8 DELIMITER.
+*/
+
+USE DATABASE DEMO_DATABASE;
+
+CREATE OR REPLACE TABLE SK_SALES_DATA
+( ORDER_ID VARCHAR(15) ,
+ ORDER_DATE date PRIMARY KEY,
+ SHIP_DATE date,
+ SHIP_MODE VARCHAR(15),
+ Customer_Name VARCHAR(60),
+ Segment VARCHAR(60),
+ State VARCHAR(60),
+ country VARCHAR(60),
+ market VARCHAR(60),
+ region VARCHAR(60),
+ product_id VARCHAR(60),
+ category VARCHAR(60),
+ SUB_CATEGORY VARCHAR(60),
+ product_name string,
+ sales number(10,0),
+ quantity int,
+ Discount float,
+ profit float,
+ SHIPPING_COST float,
+ ORDER_PRIORITY VARCHAR(60),
+ YEAR int
+);
+
+DESCRIBE TABLE SK_SALES_DATA;  --PRIMARY KEY IS SET TO ORDER_DATE
+
+select * from SK_SALES_DATA;
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+--2. CHANGE THE PRIMARY KEY TO ORDER_ID
+
+
+ALTER TABLE SK_SALES_DATA  
+DROP PRIMARY KEY;
+
+DESCRIBE TABLE SK_SALES_DATA;  --ORDER_DATE PRIMARY KEY IS DROPPED
+
+ALTER TABLE SK_SALES_DATA  
+ADD PRIMARY KEY(ORDER_ID);
+
+DESCRIBE TABLE SK_SALES_DATA;   --PRIMARY KEY IS ADDED TO ORDER_ID
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+--3.Data type for Order date and Ship date and mention in what data type it should be?
+
+CREATE OR REPLACE TABLE SK_SALES_DATA
+( ORDER_ID VARCHAR(15) PRIMARY KEY,
+ ORDER_DATE date,
+ SHIP_DATE date,
+ SHIP_MODE VARCHAR(15),
+ Customer_Name VARCHAR(60),
+ Segment VARCHAR(60),
+ State VARCHAR(60),
+ country VARCHAR(60),
+ market VARCHAR(60),
+ region VARCHAR(60),
+ product_id VARCHAR(60),
+ category VARCHAR(60),
+ SUB_CATEGORY VARCHAR(60),
+ product_name string,
+ sales number(10,0),
+ quantity int,
+ Discount float,
+ profit float,
+ SHIPPING_COST float,
+ ORDER_PRIORITY VARCHAR(60),
+ YEAR int
+);
+
+--CHANGED THE DATATYPE IN EXCEL USING TEXT TO COLUMNS AND FORMAT > 'YYYY-MM-DD'.
+
+SELECT * FROM SK_SALES_DATA;
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+--4. Create a new column called order_extract and extract the number after the last ‘–‘from Order ID column.
+
+SELECT * FROM SK_SALES_DATA;
+
+DESCRIBE TABLE SK_SALES_DATA;
+
+SELECT *,
+SUBSTRING(ORDER_ID,9) AS ORDER_EXTRACT
+FROM SK_SALES_DATA;
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+--5. Create a new column called Discount Flag and categorize it based on discount. Use ‘Yes’ if the discount is greater than zero else ‘No’.     
+
+SELECT *,
+    CASE
+        WHEN DISCOUNT > 0 THEN 'YES'
+        ELSE 'NO'
+    END AS DISCOUNT_FLAG
+FROM SK_SALES_DATA;
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+--6. Create a new column called process days and calculate how many days it takes for each order id to process from the order to its shipment.
+
+
+SELECT *,
+DATEDIFF('DAY',ORDER_DATE,SHIP_DATE) AS PROCESS_DAY
+FROM SK_SALES_DATA;
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+/*7 .Create a new column called Rating and then based on the Process dates give
+rating like given below.
+a. If process days less than or equal to 3days then rating should be 5
+b. If process days are greater than 3 and less than or equal to 6 then rating
+should be 4
+c. If process days are greater than 6 and less than or equal to 10 then rating
+should be 3
+d. If process days are greater than 10 then the rating should be 2.*/
+
+SELECT *,
+DATEDIFF('DAY',ORDER_DATE,SHIP_DATE) AS PROCESS_DAY,
+    CASE
+      WHEN PROCESS_DAY <= 3 THEN '5'
+      WHEN PROCESS_DAY > 3 AND PROCESS_DAY <= 6 THEN '4'
+      WHEN PROCESS_DAY > 6 AND PROCESS_DAY <= 10 THEN '3'
+      ELSE '2'
+    END AS RATING
+FROM SK_SALES_DATA;
+    
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
